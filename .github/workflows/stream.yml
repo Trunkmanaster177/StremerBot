@@ -31,9 +31,9 @@ jobs:
             -i video.mp4 \
             -c:v libx264 \
             -preset veryfast \
-            -b:v 2000k \
-            -maxrate 2500k \
-            -bufsize 4000k \
+            -b:v 6800k \
+            -maxrate 7500k \
+            -bufsize 13600k \
             -pix_fmt yuv420p \
             -g 60 \
             -c:a aac \
