@@ -1,0 +1,43 @@
+name: Daily YouTube Stream
+
+on:
+  schedule:
+    - cron: '0 14 * * *'  # Change this to your time (UTC)
+  workflow_dispatch:        # Manual trigger from GitHub Actions tab
+
+jobs:
+  stream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 130
+
+    steps:
+      - name: Install FFmpeg and gdown
+        run: |
+          sudo apt-get install -y ffmpeg
+          pip install gdown --break-system-packages
+
+      - name: Download Video from Google Drive
+        run: |
+          gdown --fuzzy "https://drive.google.com/file/d/YOUR_FILE_ID/view" -O video.mp4
+
+      - name: Verify Video Downloaded
+        run: |
+          ls -lh video.mp4
+          ffprobe video.mp4
+
+      - name: Stream to YouTube
+        run: |
+          ffmpeg -re -stream_loop -1 \
+            -i video.mp4 \
+            -c:v libx264 \
+            -preset veryfast \
+            -b:v 2000k \
+            -maxrate 2500k \
+            -bufsize 4000k \
+            -pix_fmt yuv420p \
+            -g 60 \
+            -c:a aac \
+            -b:a 128k \
+            -ar 44100 \
+            -t 7200 \
+            -f flv rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}
