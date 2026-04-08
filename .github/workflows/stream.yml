@@ -18,7 +18,7 @@ jobs:
 
       - name: Download Video from Google Drive
         run: |
-          gdown --fuzzy "https://drive.google.com/file/d/1qgJssY_mIV2h_ffP4uAUuMHiXRh71wol/view" -O video.mp4
+          gdown --fuzzy "https://drive.google.com/file/d/1vFNIyX4EA_Ebr6cY8I-lxpGlEFGDdWIU/view" -O video.mp4
 
       - name: Verify Video Downloaded
         run: |
