@@ -14,7 +14,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg tzdata
+          sudo apt-get install -y ffmpeg tzdata fontconfig
           pip install gdown --upgrade --break-system-packages
 
       - name: Download Video from Google Drive
@@ -31,9 +31,10 @@ jobs:
           TZ: Asia/Kolkata
         run: |
           export TZ="Asia/Kolkata"
+          FONT=$(fc-match --format="%{file}" "DejaVu Sans:Bold")
           ffmpeg -re -stream_loop -1 \
             -i video.mp4 \
-            -vf "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:\
+            -vf "drawtext=fontfile=$FONT:\
             text='%{localtime\:%I\:%M\:%S %p} IST':\
             fontsize=45:\
             fontcolor=white:\
