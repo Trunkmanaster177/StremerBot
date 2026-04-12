@@ -26,15 +26,20 @@ jobs:
           ls -lh video.mp4
           ffprobe video.mp4
 
-      - name: Stream to YouTube
-        env:
-          TZ: Asia/Kolkata
+      - name: Start Clock Writer
         run: |
-          export TZ="Asia/Kolkata"
+          while true; do
+            TZ="Asia/Kolkata" date +"%I:%M:%S %p IST" > /tmp/clock.txt
+            sleep 1
+          done &
+
+      - name: Stream to YouTube and Nimo TV
+        run: |
           ffmpeg -re -stream_loop -1 \
             -i video.mp4 \
             -vf "drawtext=\
-            text='%{pts\:localtime\:0\:%I\\:%M\\:%S %p} IST':\
+            textfile=/tmp/clock.txt:\
+            reload=1:\
             fontsize=45:\
             fontcolor=white:\
             borderw=4:\
@@ -54,4 +59,5 @@ jobs:
             -b:a 128k \
             -ar 44100 \
             -t 7200 \
-            -f flv rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}
+            -f tee \
+            "[f=flv]rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}|[f=flv]rtmp://ingest.nimo.tv/live/${{ secrets.NIMO_STREAM_KEY }}"
