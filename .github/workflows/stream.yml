@@ -2,8 +2,8 @@ name: Daily YouTube Stream
 
 on:
   schedule:
-    - cron: '0 14 * * *'  # Change this to your time (UTC)
-  workflow_dispatch:        # Manual trigger from GitHub Actions tab
+    - cron: '0 14 * * *'
+  workflow_dispatch:
 
 jobs:
   stream:
@@ -14,11 +14,11 @@ jobs:
       - name: Install FFmpeg and gdown
         run: |
           sudo apt-get install -y ffmpeg
-          pip install gdown --break-system-packages
+          pip install gdown --upgrade --break-system-packages
 
       - name: Download Video from Google Drive
         run: |
-          gdown --fuzzy "https://drive.google.com/file/d/10DDafIqaY_wP73vn3wSE1QCDo9s440OM/view" -O video.mp4
+          gdown "18j-AhTcGv9zdCfcDbwhZJDOlUZrXpuJY" -O video.mp4
 
       - name: Verify Video Downloaded
         run: |
