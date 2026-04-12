@@ -34,7 +34,7 @@ jobs:
           ffmpeg -re -stream_loop -1 \
             -i video.mp4 \
             -vf "drawtext=\
-            text='%{localtime\:%I\:%M\:%S %p} IST':\
+            text='%{pts\:localtime\:0\:%I\\:%M\\:%S %p} IST':\
             fontsize=45:\
             fontcolor=white:\
             borderw=4:\
