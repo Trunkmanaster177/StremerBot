@@ -2,7 +2,7 @@ name: Daily YouTube Stream
 
 on:
   schedule:
-    - cron: '0 14 * * *'
+    - cron: '0 14 * * *'  # Change to your preferred UTC time
   workflow_dispatch:
 
 jobs:
@@ -11,14 +11,15 @@ jobs:
     timeout-minutes: 130
 
     steps:
-      - name: Install FFmpeg and gdown
+      - name: Install Dependencies
         run: |
-          sudo apt-get install -y ffmpeg
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg tzdata
           pip install gdown --upgrade --break-system-packages
 
       - name: Download Video from Google Drive
         run: |
-          gdown "10DDafIqaY_wP73vn3wSE1QCDo9s440OM" -O video.mp4
+          gdown "1oZ4dAQm1E3ngtYDhYSdZfksZP2aPTQEn" -O video.mp4
 
       - name: Verify Video Downloaded
         run: |
@@ -26,9 +27,22 @@ jobs:
           ffprobe video.mp4
 
       - name: Stream to YouTube
+        env:
+          TZ: Asia/Kolkata
         run: |
+          export TZ="Asia/Kolkata"
           ffmpeg -re -stream_loop -1 \
             -i video.mp4 \
+            -vf "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:\
+            text='%{localtime\:%I\:%M\:%S %p} IST':\
+            fontsize=45:\
+            fontcolor=white:\
+            borderw=3:\
+            bordercolor=black@0.8:\
+            shadowx=2:\
+            shadowy=2:\
+            shadowcolor=black@0.6:\
+            x=20:y=20" \
             -c:v libx264 \
             -preset veryfast \
             -b:v 6800k \
