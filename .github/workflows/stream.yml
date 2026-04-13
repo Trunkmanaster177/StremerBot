@@ -14,12 +14,12 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg tzdata fontconfig
+          sudo apt-get install -y ffmpeg tzdata fontconfig python3
           pip install gdown --upgrade --break-system-packages
 
       - name: Download Video from Google Drive
         run: |
-          gdown "1oZ4dAQm1E3ngtYDhYSdZfksZP2aPTQEn" -O video.mp4
+          gdown "1V_TVPN19epia51Litp-fHiD1KItn-J_D" -O video.mp4
 
       - name: Verify Video Downloaded
         run: |
@@ -28,10 +28,16 @@ jobs:
 
       - name: Start Clock Writer
         run: |
-          while true; do
-            TZ="Asia/Kolkata" date +"%I:%M:%S %p IST" > /tmp/clock.txt
-            sleep 1
-          done &
+          python3 -c "
+          import time, os
+          while True:
+              t = time.strftime('%I:%M:%S %p IST', time.localtime())
+              with open('/tmp/clock.txt', 'w') as f:
+                  f.write(t)
+              time.sleep(1)
+          " &
+          sleep 2
+          cat /tmp/clock.txt
 
       - name: Stream to YouTube and Nimo TV
         run: |
