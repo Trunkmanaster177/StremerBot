@@ -17,16 +17,14 @@ jobs:
           sudo apt-get install -y ffmpeg tzdata fontconfig python3
           pip install gdown --upgrade --break-system-packages
 
-      - name: Download Audio from Google Drive
+      - name: Download Media from Google Drive
         run: |
+          # Download Sound Wave Video (Replace YOUR_VIDEO_ID_HERE)
+          gdown "1uSBbRXkkWdyWccqjq4wKTvqwzfxcPnYp" -O soundwave_bg.mp4
+          
+          # Download and Convert Audio
           gdown "1KjeJUeH3xIyK2SKVSAmhJSi4SgQa5MlQ" -O audio.bin
           ffmpeg -i audio.bin -vn -acodec libmp3lame -q:a 2 audio_final.mp3
-          echo "Converted successfully"
-
-      - name: Verify Audio
-        run: |
-          ls -lh audio_final.mp3
-          ffprobe audio_final.mp3
 
       - name: Start Countdown Writer
         run: |
@@ -46,17 +44,15 @@ jobs:
               time.sleep(1)
           EOF
           sleep 3
-          echo "Timer:"
-          cat /tmp/timer.txt
 
       - name: Stream to YouTube
         run: |
           ffmpeg \
             -re \
-            -f lavfi -i color=c=0x1a1a2e:s=720x1280:r=24 \
+            -stream_loop -1 -i soundwave_bg.mp4 \
             -stream_loop -1 -i audio_final.mp3 \
             -filter_complex \
-            "[1:a]showfreqs=s=720x300:mode=bar:ascale=log:fscale=lin:colors=0x00cfff,format=yuv420p[freq];[0:v][freq]overlay=x=0:y=600[bg];[bg]drawtext=textfile=/tmp/timer.txt:reload=1:fontsize=120:fontcolor=white:borderw=3:bordercolor=black:x=(w-tw)/2:y=150[vout]" \
+            "[0:v]drawtext=textfile=/tmp/timer.txt:reload=1:fontsize=120:fontcolor=white:borderw=3:bordercolor=black:x=(w-tw)/2:y=150[vout]" \
             -map "[vout]" \
             -map "1:a" \
             -c:v libx264 \
