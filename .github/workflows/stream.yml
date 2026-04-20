@@ -57,9 +57,9 @@ jobs:
             -map "1:a" \
             -c:v libx264 \
             -preset veryfast \
-            -b:v 2500k \
-            -maxrate 3000k \
-            -bufsize 5000k \
+            -b:v 6500k \
+            -maxrate 7000k \
+            -bufsize 10000k \
             -pix_fmt yuv420p \
             -g 48 \
             -c:a aac \
