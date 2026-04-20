@@ -49,9 +49,10 @@ jobs:
           echo "Timer:"
           cat /tmp/timer.txt
 
-      - name: Stream to YouTube Only
+      - name: Stream to YouTube
         run: |
           ffmpeg \
+            -re \
             -f lavfi -i color=c=black:s=1080x1920:r=30 \
             -stream_loop -1 -i audio_final.mp3 \
             -filter_complex \
@@ -59,10 +60,10 @@ jobs:
             -map "[vout]" \
             -map "1:a" \
             -c:v libx264 \
-            -preset ultrafast \
-            -b:v 3000k \
-            -maxrate 3500k \
-            -bufsize 6000k \
+            -preset veryfast \
+            -b:v 6800k \
+            -maxrate 7500k \
+            -bufsize 13600k \
             -pix_fmt yuv420p \
             -g 60 \
             -c:a aac \
