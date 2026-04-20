@@ -53,19 +53,19 @@ jobs:
         run: |
           ffmpeg \
             -re \
-            -f lavfi -i color=c=black:s=1080x1920:r=30 \
+            -f lavfi -i color=c=0x1a1a2e:s=720x1280:r=24 \
             -stream_loop -1 -i audio_final.mp3 \
             -filter_complex \
-            "[1:a]avectorscope=s=1080x400:zoom=2:rc=0:gc=200:bc=255:rf=0:gf=40:bf=80,format=yuv420p[anim];[0:v][anim]overlay=x=0:y=760[bg];[bg]drawtext=textfile=/tmp/timer.txt:reload=1:fontsize=160:fontcolor=white:borderw=4:bordercolor=black:x=(w-tw)/2:y=250,drawtext=text='▶ Now Playing':fontsize=50:fontcolor=yellow:borderw=2:bordercolor=black:x=(w-tw)/2:y=1300[vout]" \
+            "[1:a]showfreqs=s=720x300:mode=bar:ascale=log:fscale=lin:colors=0x00cfff,format=yuv420p[freq];[0:v][freq]overlay=x=0:y=600[bg];[bg]drawtext=textfile=/tmp/timer.txt:reload=1:fontsize=120:fontcolor=white:borderw=3:bordercolor=black:x=(w-tw)/2:y=150[vout]" \
             -map "[vout]" \
             -map "1:a" \
             -c:v libx264 \
             -preset veryfast \
-            -b:v 6800k \
-            -maxrate 7500k \
-            -bufsize 13600k \
+            -b:v 2500k \
+            -maxrate 3000k \
+            -bufsize 5000k \
             -pix_fmt yuv420p \
-            -g 60 \
+            -g 48 \
             -c:a aac \
             -b:a 128k \
             -ar 44100 \
