@@ -19,12 +19,19 @@ jobs:
 
       - name: Download Audio from Google Drive
         run: |
-          gdown "YOUR_AUDIO_FILE_ID" -O audio.mp3
+          gdown "1KjeJUeH3xIyK2SKVSAmhJSi4SgQa5MlQ" -O audio.bin
+          ffprobe audio.bin 2>&1 | grep "Audio:"
+          EXT=$(ffprobe -v error -select_streams a:0 \
+            -show_entries stream=codec_name \
+            -of default=noprint_wrappers=1:nokey=1 audio.bin)
+          echo "Detected codec: $EXT"
+          ffmpeg -i audio.bin -vn -acodec libmp3lame -q:a 2 audio_final.mp3
+          echo "Converted to MP3 successfully"
 
-      - name: Verify Audio Downloaded
+      - name: Verify Audio
         run: |
-          ls -lh audio.mp3
-          ffprobe audio.mp3
+          ls -lh audio_final.mp3
+          ffprobe audio_final.mp3
 
       - name: Start Countdown Writer
         run: |
@@ -50,7 +57,7 @@ jobs:
         run: |
           ffmpeg \
             -f lavfi -i color=c=black:s=1080x1920:r=30 \
-            -stream_loop -1 -i audio.mp3 \
+            -stream_loop -1 -i audio_final.mp3 \
             -filter_complex "
               [1:a]showwaves=
                 s=1080x300:
