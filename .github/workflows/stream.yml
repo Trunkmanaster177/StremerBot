@@ -46,27 +46,27 @@ jobs:
               time.sleep(1)
           EOF
           sleep 3
-          echo "Timer file content:"
+          echo "Timer:"
           cat /tmp/timer.txt
 
-      - name: Stream to YouTube and Nimo TV
+      - name: Stream to YouTube Only
         run: |
           ffmpeg \
             -f lavfi -i color=c=black:s=1080x1920:r=30 \
             -stream_loop -1 -i audio_final.mp3 \
-            -filter_complex "[1:a]showwaves=s=1080x300:mode=cline:rate=30:colors=0x00FFFF|0xFF00FF,format=yuv420p[wave];[0:v][wave]overlay=x=0:y=810[bg];[bg]drawtext=textfile=/tmp/timer.txt:reload=1:fontsize=180:fontcolor=white:borderw=5:bordercolor=black:shadowx=4:shadowy=4:shadowcolor=black@0.8:x=(w-tw)/2:y=200[vout]" \
+            -filter_complex \
+            "[1:a]showwaves=s=1080x200:mode=line:rate=30:colors=white,format=yuv420p[wave];[0:v][wave]overlay=x=0:y=860[bg];[bg]drawtext=textfile=/tmp/timer.txt:reload=1:fontsize=160:fontcolor=white:borderw=4:bordercolor=black:x=(w-tw)/2:y=250[vout]" \
             -map "[vout]" \
             -map "1:a" \
             -c:v libx264 \
-            -preset veryfast \
-            -b:v 6800k \
-            -maxrate 7500k \
-            -bufsize 13600k \
+            -preset ultrafast \
+            -b:v 3000k \
+            -maxrate 3500k \
+            -bufsize 6000k \
             -pix_fmt yuv420p \
             -g 60 \
             -c:a aac \
             -b:a 128k \
             -ar 44100 \
             -t 7200 \
-            -f tee \
-            "[f=flv:onfail=ignore]rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}|[f=flv:onfail=ignore]rtmp://ingest.nimo.tv/live/${{ secrets.NIMO_STREAM_KEY }}"
+            -f flv rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}
