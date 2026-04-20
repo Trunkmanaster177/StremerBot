@@ -1,4 +1,4 @@
-name: Daily YouTube Stream
+name: Daily Podcast Stream
 
 on:
   schedule:
@@ -17,43 +17,63 @@ jobs:
           sudo apt-get install -y ffmpeg tzdata fontconfig python3
           pip install gdown --upgrade --break-system-packages
 
-      - name: Download Video from Google Drive
+      - name: Download Audio from Google Drive
         run: |
-          gdown "1V_TVPN19epia51Litp-fHiD1KItn-J_D" -O video.mp4
+          gdown "YOUR_AUDIO_FILE_ID" -O audio.mp3
 
-      - name: Verify Video Downloaded
+      - name: Verify Audio Downloaded
         run: |
-          ls -lh video.mp4
-          ffprobe video.mp4
+          ls -lh audio.mp3
+          ffprobe audio.mp3
 
-      - name: Start Clock Writer
+      - name: Start Countdown Writer
         run: |
           python3 -c "
-          import time, os
+          import time
+          total = 7200
+          start = time.time()
           while True:
-              t = time.strftime('%I:%M:%S %p IST', time.localtime())
-              with open('/tmp/clock.txt', 'w') as f:
-                  f.write(t)
+              elapsed = int(time.time() - start)
+              remaining = max(0, total - elapsed)
+              h = remaining // 3600
+              m = (remaining % 3600) // 60
+              s = remaining % 60
+              text = f'{h:02d}:{m:02d}:{s:02d}'
+              with open('/tmp/timer.txt', 'w') as f:
+                  f.write(text)
               time.sleep(1)
           " &
           sleep 2
-          cat /tmp/clock.txt
+          cat /tmp/timer.txt
 
       - name: Stream to YouTube and Nimo TV
         run: |
-          ffmpeg -re -stream_loop -1 \
-            -i video.mp4 \
-            -vf "drawtext=\
-            textfile=/tmp/clock.txt:\
-            reload=1:\
-            fontsize=55:\
-            fontcolor=white:\
-            borderw=4:\
-            bordercolor=black:\
-            shadowx=3:\
-            shadowy=3:\
-            shadowcolor=black:\
-            x=15:y=50" \
+          ffmpeg \
+            -f lavfi -i color=c=black:s=1080x1920:r=30 \
+            -stream_loop -1 -i audio.mp3 \
+            -filter_complex "
+              [1:a]showwaves=
+                s=1080x300:
+                mode=cline:
+                rate=30:
+                colors=0x00FFFF|0xFF00FF,
+              format=yuv420p[wave];
+              [0:v][wave]overlay=
+                x=0:
+                y=(H-h)/2+200[bg];
+              [bg]drawtext=
+                textfile=/tmp/timer.txt:
+                reload=1:
+                fontsize=180:
+                fontcolor=white:
+                borderw=5:
+                bordercolor=black:
+                shadowx=4:
+                shadowy=4:
+                shadowcolor=black@0.8:
+                x=(w-tw)/2:
+                y=(h-th)/2-200
+            " \
             -c:v libx264 \
             -preset veryfast \
             -b:v 6800k \
@@ -65,6 +85,7 @@ jobs:
             -b:a 128k \
             -ar 44100 \
             -t 7200 \
-            -map 0:v -map 0:a \
+            -map "[bg]" \
+            -map 1:a \
             -f tee \
             "[f=flv:onfail=ignore]rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}|[f=flv:onfail=ignore]rtmp://ingest.nimo.tv/live/${{ secrets.NIMO_STREAM_KEY }}"
