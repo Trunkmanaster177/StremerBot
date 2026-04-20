@@ -56,14 +56,13 @@ jobs:
             -f lavfi -i color=c=black:s=1080x1920:r=30 \
             -stream_loop -1 -i audio_final.mp3 \
             -filter_complex \
-            "[1:a]showwaves=s=1080x200:mode=line:rate=30:colors=white,format=yuv420p[wave];[0:v][wave]overlay=x=0:y=860[bg];[bg]drawtext=textfile=/tmp/timer.txt:reload=1:fontsize=160:fontcolor=white:borderw=4:bordercolor=black:x=(w-tw)/2:y=250[vout]" \
+            "[0:v]drawtext=textfile=/tmp/timer.txt:reload=1:fontsize=160:fontcolor=white:borderw=4:bordercolor=black:x=(w-tw)/2:y=250,drawtext=text='🎙 LIVE PODCAST':fontsize=60:fontcolor=cyan:borderw=3:bordercolor=black:x=(w-tw)/2:y=500,drawtext=text='▶ Now Playing':fontsize=50:fontcolor=yellow:borderw=2:bordercolor=black:x=(w-tw)/2:y=800[vout]" \
             -map "[vout]" \
             -map "1:a" \
             -c:v libx264 \
             -preset veryfast \
             -b:v 6800k \
             -maxrate 7500k \
-            -minrate 6800k \
             -bufsize 13600k \
             -pix_fmt yuv420p \
             -g 60 \
