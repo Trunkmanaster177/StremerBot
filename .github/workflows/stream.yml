@@ -30,7 +30,7 @@ jobs:
 
       - name: Start Countdown Writer
         run: |
-          python3 -c "
+          python3 << 'EOF' &
           import time
           total = 7200
           start = time.time()
@@ -44,25 +44,19 @@ jobs:
               with open('/tmp/timer.txt', 'w') as f:
                   f.write(text)
               time.sleep(1)
-          " &
-          sleep 2
+          EOF
+          sleep 3
+          echo "Timer file content:"
           cat /tmp/timer.txt
-
-      - name: Create Named Pipe
-        run: |
-          mkfifo /tmp/stream_pipe
 
       - name: Stream to YouTube and Nimo TV
         run: |
           ffmpeg \
             -f lavfi -i color=c=black:s=1080x1920:r=30 \
             -stream_loop -1 -i audio_final.mp3 \
-            -filter_complex \
-              "[1:a]showwaves=s=1080x300:mode=cline:rate=30:colors=0x00FFFF|0xFF00FF,format=yuv420p[wave]; \
-               [0:v][wave]overlay=x=0:y=(H-h)/2+200[bg]; \
-               [bg]drawtext=textfile=/tmp/timer.txt:reload=1:fontsize=180:fontcolor=white:borderw=5:bordercolor=black:shadowx=4:shadowy=4:shadowcolor=black@0.8:x=(w-tw)/2:y=(h-th)/2-200[out]; \
-               [1:a]asplit=2[a1][a2]" \
-            -map "[out]" -map "[a1]" \
+            -filter_complex "[1:a]showwaves=s=1080x300:mode=cline:rate=30:colors=0x00FFFF|0xFF00FF,format=yuv420p[wave];[0:v][wave]overlay=x=0:y=810[bg];[bg]drawtext=textfile=/tmp/timer.txt:reload=1:fontsize=180:fontcolor=white:borderw=5:bordercolor=black:shadowx=4:shadowy=4:shadowcolor=black@0.8:x=(w-tw)/2:y=200[out];[1:a]asplit=2[a1][a2]" \
+            -map "[out]" \
+            -map "[a1]" \
             -c:v libx264 \
             -preset veryfast \
             -b:v 6800k \
@@ -75,7 +69,8 @@ jobs:
             -ar 44100 \
             -t 7200 \
             -f flv rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }} \
-            -map "[out]" -map "[a2]" \
+            -map "[out]" \
+            -map "[a2]" \
             -c:v libx264 \
             -preset veryfast \
             -b:v 6800k \
